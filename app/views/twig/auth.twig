@@ -1,0 +1,47 @@
+<div class="container center">
+    <h2 class="shopping-cart-forms-text modal_title">Войдите в свой аккаунт или авторзуйтесь</h2>
+</div>
+
+{% if message %}
+    <div class="container center">
+        <h2 class="shopping-cart-forms-text modal_title pink">{{ message }}</h2>
+    </div>
+{% endif %}
+
+<main class="container auth-flex">
+    {% if user %}
+        <div>
+            <h2 class="shopping-cart-forms-text modal_title pink">Привет, {{ user.login }}!</h2>
+            <a class="button-black shopping-cart-forms-button_size modal_size" href="/auth/logout">Выйти</a>
+        </div>
+    {% else %}
+        <div>
+            <h2 class="shopping-cart-forms-text modal_title">Войти</h2>
+
+            <form method="post" action="/auth/login">
+                <input class="shopping-cart-forms-input shopping-cart-forms-input_width"
+                       placeholder="Логин" type="text" required name="login">
+                <input class="shopping-cart-forms-input shopping-cart-forms-input_width"
+                       placeholder="Пароль" required name="password">
+                <input class="button-black shopping-cart-forms-button_size modal_size"
+                       type="submit" value="Отправить">
+            </form>
+        </div>
+    {% endif %}
+
+    <div>
+        <h2 class="shopping-cart-forms-text modal_title">Авторизоваться</h2>
+
+        <form method="post" action="/auth/signUp">
+            <input class="shopping-cart-forms-input shopping-cart-forms-input_width"
+                   placeholder="ФИО" type="text" name="fio">
+            <input class="shopping-cart-forms-input shopping-cart-forms-input_width"
+                   placeholder="Логин" type="text" name="login" required>
+            <input class="shopping-cart-forms-input shopping-cart-forms-input_width"
+                   placeholder="Пароль" name="password" required>
+            <input class="button-black shopping-cart-forms-button_size modal_size"
+                   type="submit" value="Отправить">
+        </form>
+    </div>
+
+</main>

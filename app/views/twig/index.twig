@@ -1,0 +1,29 @@
+<div class="container">
+    <div class="shipping-address">
+        <h2 class="shopping-cart-forms-text">Добавить файл</h2>
+        <form method="post" enctype="multipart/form-data" action="/index/add">
+            <input class="custom-file-input" type="file" name="userfile"><br>
+            <input type="submit" class="button-black shopping-cart-forms-button_size" value="Отправить">
+        </form>
+    </div>
+
+    <h2 class="name-product name-product_margin">Файлы</h2>
+
+    {% for file in files %}
+        <div class="">
+            <h3 class="text">{{ file.columns.name }}.{{ file.columns.filename_extension }}</h3>
+
+            <form class="change-products" method="post" action="/index/change">
+                <input class="product-form product-form_input"
+                       placeholder="Новое имя" type="text" name="name" required>
+                <input type="hidden" name="id" value="{{ file.columns.id }}">
+                <input class="product-form product-form_submit" type="submit" value="Переименовать">
+            </form>
+
+            <a href="/index/delete?id={{ file.columns.id }}"
+               class="button-black shopping-cart-forms-button_size button-users">Удалить</a>
+        </div>
+    {% else %}
+        Пока нет файлов
+    {% endfor %}
+</div>
