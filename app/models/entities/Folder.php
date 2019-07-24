@@ -2,16 +2,13 @@
 
 namespace App\models\entities;
 
-
-class File extends Entity
+class Folder extends Entity
 {
     public $columns = [
         "id" => "",
         "name" => "",
-        "filename_extension" =>"",
-        "id_user" => "",
         "path" =>"",
-        "id_folder" => "",
+        "id_user" => "",
         "mark" => ""
     ];
 }

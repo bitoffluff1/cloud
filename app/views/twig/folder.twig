@@ -2,31 +2,11 @@
     <div class="shipping-address">
         <h2 class="shopping-cart-forms-text">Добавить файл</h2>
         <form method="post" enctype="multipart/form-data" action="/index/add">
+            <input type="hidden" name="id" value="{{ folder }}">
             <input class="custom-file-input" type="file" name="userfile"><br>
             <input type="submit" class="button-black shopping-cart-forms-button_size" value="Отправить">
         </form>
     </div>
-
-
-    <a href="/folder/add"
-       class="button-black shopping-cart-forms-button_size button-users">Добавить папку</a>
-
-    <h2 class="name-product name-product_margin">Папки</h2>
-    {% for item in folder %}
-        <div class="">
-            <a href="/folder/index?id={{ item.columns.id }}" class="text">{{ item.columns.name  }}</a>
-
-            <form class="change-products" method="post" action="/folder/change">
-                <input class="product-form product-form_input"
-                       placeholder="Новое имя" type="text" name="name" required>
-                <input type="hidden" name="id" value="{{ item.columns.id }}">
-                <input class="product-form product-form_submit" type="submit" value="Переименовать">
-            </form>
-
-            <a href="/folder/delete?id={{ item.columns.id }}"
-               class="button-black shopping-cart-forms-button_size button-users">Удалить</a>
-        </div>
-    {% endfor %}
 
     <h2 class="name-product name-product_margin">Файлы</h2>
 

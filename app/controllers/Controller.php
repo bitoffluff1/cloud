@@ -4,6 +4,7 @@
 namespace App\controllers;
 
 
+use App\main\App;
 use App\services\renders\IRender;
 use App\services\Request;
 
@@ -69,6 +70,7 @@ abstract class Controller
         return $user["id"];
     }
 
+
     public function checkData($data){
         foreach ($data as $key => $value) {
             if (empty($value)) {
@@ -77,5 +79,6 @@ abstract class Controller
         }
         return true;
     }
+
 
 }

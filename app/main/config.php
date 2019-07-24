@@ -28,23 +28,14 @@ return [
         "fileRepository" => [
             "class" => \App\models\repositories\FileRepository::class,
         ],
-        "orderRepository" => [
-            "class" => \App\models\repositories\OrderRepository::class,
+        "folderRepository" => [
+            "class" => \App\models\repositories\FolderRepository::class,
         ],
-        "reviewRepository" => [
-            "class" => \App\models\repositories\ReviewRepository::class,
-        ],
-        "cartServices" => [
-            "class" => \App\services\CartServices::class,
+        "folderServices" => [
+            "class" => \App\services\FolderServices::class,
         ],
         "authServices" => [
             "class" => \App\services\AuthServices::class,
-        ],
-        "goodServices" => [
-            "class" => \App\services\GoodServices::class,
-        ],
-        "orderServices" => [
-            "class" => \App\services\OrderServices::class,
         ],
     ],
 ];

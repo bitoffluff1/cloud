@@ -34,6 +34,7 @@ abstract class Repository implements IRepository//abstract от этого кл�
     /**
      * Получение всех записей
      *
+     * @param $id
      * @return array
      */
     public function getAll($id, string $sql = "")

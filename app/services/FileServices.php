@@ -8,14 +8,22 @@ use App\main\App;
 
 class FileServices
 {
-    public function copyFile($id_user, $item)
+    public function copyFile($id_user, $item, $folder_name = "")
     {
-        if(!file_exists(PUBLIC_DIR . "/../files/{$id_user}")){
-            mkdir(PUBLIC_DIR . "/../files/{$id_user}");
+        $path = "/../files/{$id_user}";
+        if(!empty($folder_name)){
+            $path = "/../files/{$id_user}/{$folder_name}";
         }
 
-        $file = PUBLIC_DIR . "/../files/{$id_user}/{$item['name']}";
+
+        if (!file_exists(PUBLIC_DIR . $path)) {
+            mkdir(PUBLIC_DIR . $path);
+        }
+
+        $file = PUBLIC_DIR . $path . "/{$item['name']}";
         copy($item['tmp_name'], $file);
+
+        return $path;
     }
 
     public function changeFile($data)
@@ -24,20 +32,31 @@ class FileServices
         App::call()->fileRepository->save($file);
     }
 
-    public function renameFile($id_user, $name, $fne, $newName)
+    public function renameFile($path, $name, $fne, $newName)
     {
-        $path = PUBLIC_DIR . "/../files/{$id_user}";
+        if (file_exists(PUBLIC_DIR . $path . "/{$name}.{$fne}")) {
+            rename(PUBLIC_DIR . $path . "/{$name}.{$fne}", PUBLIC_DIR . $path . "/{$newName}.{$fne}");
+        }
 
-        if(file_exists($path . "/{$name}.{$fne}")){
-            rename($path . "/{$name}.{$fne}", $path . "/{$newName}.{$fne}" );
+        if(file_exists(PUBLIC_DIR . $path . "/{$newName}.{$fne}")){
+            return true;
+        } else{
+            return false;
         }
     }
 
-    public function deleteFile($id_user, $name, $fne){
-        $file = PUBLIC_DIR . "/../files/{$id_user}/{$name}.{$fne}";
+    public function deleteFile($path, $name, $fne)
+    {
+        $file = PUBLIC_DIR . $path. "/{$name}.{$fne}";
 
-        if(file_exists($file)){
+        if (file_exists($file)) {
             unlink($file);
+        }
+
+        if(!file_exists($file)){
+            return true;
+        } else{
+            return false;
         }
     }
 }
