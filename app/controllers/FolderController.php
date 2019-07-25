@@ -7,29 +7,25 @@ use App\main\App;
 
 class FolderController extends Controller
 {
-    public function indexAction()
-    {
-        $id_folder = $this->getId();
-        $sql = "SELECT * FROM `files` WHERE `id_user` = '{$this->checkUser()}' AND `id_folder` = '{$id_folder}'";
-
-        $params = [
-            "user" => $this->checkUser(),
-            "folder" => $id_folder,
-            "files" => App::call()->fileRepository->getAll($this->checkUser(), $sql),
-        ];
-
-        echo $this->render("folder", $params);
-    }
-
     public function addAction()
     {
-        $data = App::call()->folderServices->addFolder($this->checkUser());
+        $this->isUser();
 
-        $params["id_user"] = $this->checkUser();
-        $params["path"] = $data["path"];
-        $params["name"] = $data["name"];
+        $path = App::call()->fileServices->getPathFile($this->checkUser());
 
-        if ($this->checkData($params)) {
+        if (!empty($this->getId())) {
+            $folder = App::call()->folderRepository->getOne($this->getId());
+            $path = App::call()->folderServices->getPathFolder($folder->columns);
+        }
+
+        if (empty($path)) {
+            $this->redirect();
+        }
+
+        $nameFolder = App::call()->folderServices->addFolder($path);
+        if (!empty($nameFolder)) {
+            $params["name"] = $nameFolder;
+            $params["path"] = $path;
             App::call()->folderServices->changeFile($params);
         }
 
@@ -38,6 +34,8 @@ class FolderController extends Controller
 
     public function changeAction()
     {
+        $this->isUser();
+
         $params = $this->request->getParams("post");
         if (!isset($params["id"]) && !isset($params["name"])) {
             $this->redirect();
@@ -45,9 +43,13 @@ class FolderController extends Controller
 
         App::call()->folderServices->changeFile(["id" => $params["id"], "mark" => "changeName"]);
 
-        $file = App::call()->folderRepository->getOne($params["id"]);
-        if (App::call()->folderServices->renameFile($this->checkUser(), $file->columns["name"], $params["name"]) &&
-            $file->columns["mark"] === "changeName") {
+        $folder = App::call()->folderRepository->getOne($params["id"]);
+        foreach (["file", "folder"] as $entity){
+            App::call()->folderServices->renamePath($folder, $params["name"], $entity);
+        }
+
+        if (App::call()->folderServices->renameFile($folder->columns, $params["name"]) &&
+            $folder->columns["mark"] === "changeName") {
             App::call()->folderServices->changeFile($params);
         }
 
@@ -58,6 +60,8 @@ class FolderController extends Controller
 
     public function deleteAction()
     {
+        $this->isUser();
+
         App::call()->folderServices->changeFile(["id" => $this->getId(), "mark" => "delete"]);
         $file = App::call()->folderRepository->getOne($this->getId());
 

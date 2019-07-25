@@ -31,20 +31,25 @@ abstract class Repository implements IRepository//abstract от этого кл�
         return $this->db->getObject($sql, $this->getEntityClass(), [":id" => $id]);
     }
 
-    /**
-     * Получение всех записей
-     *
-     * @param $id
-     * @return array
-     */
-    public function getAll($id, string $sql = "")
+
+    public function getAll(string $path, string $sql = "")
     {
         if (empty($sql)) {
             $table = $this->getTableName();
-            $sql = "SELECT * FROM {$table} WHERE id_user = :id";
+            $sql = "SELECT * FROM {$table} WHERE path = :path";
         }
 
-        return $this->db->getObjects($sql, $this->getEntityClass(), [":id" => $id]);
+        return $this->db->getObjects($sql, $this->getEntityClass(), [":path" => $path]);
+    }
+
+    public function getAllLike(string $path, string $sql = "")
+    {
+        if (empty($sql)) {
+            $table = $this->getTableName();
+            $sql = "SELECT * FROM {$table} WHERE path LIKE :path";
+        }
+
+        return $this->db->getObjects($sql, $this->getEntityClass(), [":path" => $path]);
     }
 
     public function delete(Entity $entity)

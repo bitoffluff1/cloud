@@ -1,52 +1,62 @@
-<div class="container">
-    <div class="shipping-address">
-        <h2 class="shopping-cart-forms-text">Добавить файл</h2>
+<div class="container flex content">
+    <div>
+        <p class="text-bottom">Вы можете хранить картинки, видео и аудио файлы</p>
         <form method="post" enctype="multipart/form-data" action="/index/add">
-            <input class="custom-file-input" type="file" name="userfile"><br>
-            <input type="submit" class="button-black shopping-cart-forms-button_size" value="Отправить">
+            <input type="hidden" name="id_folder" value="{{ id_folder }}">
+            <input class="custom-file-input" type="file" name="userfile">
+            <input type="submit" class="button-black button_size" value="Отправить">
         </form>
+
+        <a href="/folder/add?id={{ id_folder }}"
+           class="button-black button_size">Добавить папку</a>
+
     </div>
 
+    <div class="main-content">
+        <div class="box box_margin">
+            <h2 class="heading">Папки</h2>
+            <div class="flex box_flex ">
+                {% for item in folder %}
+                    <div class="box box_margin">
+                        <a href="/index?id={{ item.columns.id }}" class="menu-link">{{ item.columns.name }}</a>
 
-    <a href="/folder/add"
-       class="button-black shopping-cart-forms-button_size button-users">Добавить папку</a>
+                        <form class="change-products" method="post" action="/folder/change">
+                            <input class="product-form product-form_input"
+                                   placeholder="Новое имя" type="text" name="name" required>
+                            <input type="hidden" name="id" value="{{ item.columns.id }}">
+                            <input class="product-form product-form_submit" type="submit" value="Переименовать">
+                        </form>
 
-    <h2 class="name-product name-product_margin">Папки</h2>
-    {% for item in folder %}
-        <div class="">
-            <a href="/folder/index?id={{ item.columns.id }}" class="text">{{ item.columns.name  }}</a>
-
-            <form class="change-products" method="post" action="/folder/change">
-                <input class="product-form product-form_input"
-                       placeholder="Новое имя" type="text" name="name" required>
-                <input type="hidden" name="id" value="{{ item.columns.id }}">
-                <input class="product-form product-form_submit" type="submit" value="Переименовать">
-            </form>
-
-            <a href="/folder/delete?id={{ item.columns.id }}"
-               class="button-black shopping-cart-forms-button_size button-users">Удалить</a>
+                        <a href="/folder/delete?id={{ item.columns.id }}"
+                           class="button-black button_size">Удалить</a>
+                    </div>
+                {% endfor %}
+            </div>
         </div>
-    {% endfor %}
 
-    <h2 class="name-product name-product_margin">Файлы</h2>
+        <div class="box box_margin">
+            <h2 class="heading">Файлы</h2>
+            <div class="flex box_flex">
+                {% for file in files %}
+                    <div class="box box_margin">
+                        <h3 class="menu-link_hover">{{ file.columns.name }}.{{ file.columns.filename_extension }}</h3>
 
-    {% for file in files %}
-        <div class="">
-            <h3 class="text">{{ file.columns.name }}.{{ file.columns.filename_extension }}</h3>
+                        <form class="change-products" method="post" action="/index/change">
+                            <input class="product-form product-form_input"
+                                   placeholder="Новое имя" type="text" name="name" required>
+                            <input type="hidden" name="id" value="{{ file.columns.id }}">
+                            <input class="product-form product-form_submit" type="submit" value="Переименовать">
+                        </form>
 
-            <form class="change-products" method="post" action="/index/change">
-                <input class="product-form product-form_input"
-                       placeholder="Новое имя" type="text" name="name" required>
-                <input type="hidden" name="id" value="{{ file.columns.id }}">
-                <input class="product-form product-form_submit" type="submit" value="Переименовать">
-            </form>
-
-            <a href="/index/delete?id={{ file.columns.id }}"
-               class="button-black shopping-cart-forms-button_size button-users">Удалить</a>
-            <a href="/index/download?id={{ file.columns.id }}"
-               class="button-black shopping-cart-forms-button_size button-users">Скачать</a>
+                        <a href="/index/delete?id={{ file.columns.id }}"
+                           class="button-black button_size">Удалить</a>
+                        <a href="/index/download?id={{ file.columns.id }}"
+                           class="button-black button_size">Скачать</a>
+                    </div>
+                {% else %}
+                    Пока нет файлов
+                {% endfor %}
+            </div>
         </div>
-    {% else %}
-        Пока нет файлов
-    {% endfor %}
+    </div>
 </div>

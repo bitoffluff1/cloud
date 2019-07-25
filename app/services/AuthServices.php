@@ -15,10 +15,7 @@ class AuthServices
     public function login($request, $user, $password)
     {
         if (password_verify($password, $user["password"])) {
-            $user["role"] === "isAdmin"
-                ? $request->setSession("admin", $user)
-                : $request->setSession("user", $user);
-
+            $request->setSession("user", $user);
             return true;
         }
         return false;
@@ -34,9 +31,12 @@ class AuthServices
     {
         $newUser = App::call()->userRepository->newEntity($data);
         App::call()->userRepository->save($newUser);
+        if(!empty($newUser)){
+            $request->setSession("user", $newUser->columns);
+            return true;
+        }
 
-        $request->setSession("user", $newUser->columns);
-        return $newUser->columns;
+        return false;
     }
 
     public function logout($request)

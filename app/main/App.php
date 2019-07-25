@@ -3,6 +3,7 @@
 
 namespace App\main;
 
+use App\models\repositories\UserRepository;
 use App\services\Db;
 use App\services\AuthServices;
 use \App\services\renders\TwigRender;
@@ -24,6 +25,7 @@ use App\traits\TSingleton;
  * @property FolderServices $folderServices
  * @property FolderRepository $folderRepository
  * @property AuthServices $authServices
+ * @property UserRepository $userRepository
  */
 class App
 {

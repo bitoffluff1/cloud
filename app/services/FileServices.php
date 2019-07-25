@@ -8,22 +8,60 @@ use App\main\App;
 
 class FileServices
 {
-    public function copyFile($id_user, $item, $folder_name = "")
+
+    public function checkFile($file)
     {
-        $path = "/../files/{$id_user}";
-        if(!empty($folder_name)){
-            $path = "/../files/{$id_user}/{$folder_name}";
+        if (!is_uploaded_file($file['tmp_name'])) return false;
+
+        $blacklist = [".php", ".phtml", ".php3", ".php4", ".html", ".htm"];
+        foreach ($blacklist as $item) {
+            if (preg_match("/$item\$/i", $file['name'])) return false;
         }
 
+        $fi = finfo_open(FILEINFO_MIME_TYPE);
+        $mime = (string)finfo_file($fi, $file['tmp_name']);
+        $mimeList = ["image", "video", "audio"];
+        $a = 0;
+        foreach ($mimeList as $item) {
+            if (strpos($mime, $item) !== false) $a = 1;
+        }
+        if ($a === 0) return false;
 
+        return true;
+    }
+
+    public function getPathFile($idUser)
+    {
+        return "/../files/{$idUser}";
+    }
+
+    public function copyFile($path, $file, $fileName, $fileFormat)
+    {
         if (!file_exists(PUBLIC_DIR . $path)) {
             mkdir(PUBLIC_DIR . $path);
         }
 
-        $file = PUBLIC_DIR . $path . "/{$item['name']}";
-        copy($item['tmp_name'], $file);
+        $newFile = PUBLIC_DIR . $path . "/{$fileName}.{$fileFormat}";
+        if (file_exists($newFile)) {
+            $files = scandir(PUBLIC_DIR . $path);
+            $arr = [];
+            foreach ($files as $name) {
+                if (preg_match("/^{$fileName}(\([0-9]\))?.{$fileFormat}$/", $name, $matches)) {
+                    $arr[] = $matches[0];
+                }
+            }
+            $length = count($arr);
+            $name = "{$fileName}({$length}).{$fileFormat}";
+            move_uploaded_file($file['tmp_name'], PUBLIC_DIR . $path . "/{$name}");
+        } else {
+            $name = $file['name'];
+            move_uploaded_file($file['tmp_name'], $newFile);
+        }
 
-        return $path;
+        if (file_exists(PUBLIC_DIR . $path . "/{$name}")) {
+            return $name;
+        }
+        return false;
     }
 
     public function changeFile($data)
@@ -32,31 +70,32 @@ class FileServices
         App::call()->fileRepository->save($file);
     }
 
-    public function renameFile($path, $name, $fne, $newName)
+    public function renameFile(array $file, $newName)
     {
-        if (file_exists(PUBLIC_DIR . $path . "/{$name}.{$fne}")) {
-            rename(PUBLIC_DIR . $path . "/{$name}.{$fne}", PUBLIC_DIR . $path . "/{$newName}.{$fne}");
+        $item = PUBLIC_DIR . $file["path"] . "/{$file["name"]}.{$file["filename_extension"]}";
+        $newItem = PUBLIC_DIR . $file["path"] . "/{$newName}.{$file["filename_extension"]}";
+
+        if (file_exists($item)) {
+            rename($item, $newItem);
         }
 
-        if(file_exists(PUBLIC_DIR . $path . "/{$newName}.{$fne}")){
+        if (file_exists($newItem)) {
             return true;
-        } else{
-            return false;
         }
+        return false;
     }
 
-    public function deleteFile($path, $name, $fne)
+    public function deleteFile($file)
     {
-        $file = PUBLIC_DIR . $path. "/{$name}.{$fne}";
+        $item = PUBLIC_DIR . $file["path"] . "/{$file["name"]}.{$file["filename_extension"]}";
 
-        if (file_exists($file)) {
-            unlink($file);
+        if (file_exists($item)) {
+            unlink($item);
         }
 
-        if(!file_exists($file)){
+        if (!file_exists($item)) {
             return true;
-        } else{
-            return false;
         }
+        return false;
     }
 }

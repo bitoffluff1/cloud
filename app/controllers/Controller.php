@@ -80,5 +80,13 @@ abstract class Controller
         return true;
     }
 
+    public function isUser()
+    {
+        $user = $this->checkUser();
+
+        if (empty($user)) {
+            $this->redirect("/auth");
+        }
+    }
 
 }

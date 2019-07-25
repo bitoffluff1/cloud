@@ -9,36 +9,20 @@
     <title>Cloud</title>
 </head>
 <body>
-<div class="all" id="app">
+<div class="all">
     <header class="header">
         <div class="container header-flex">
             <div class="header-left">
-                <a class="logo" href="/auth">Облачное хранилище</a>
+                <a class="logo" href="/index">Облачное хранилище</a>
             </div>
+            {% if user %}
+                <div class="header-right">
+                    <a class="menu-link" href="/index">Все файлы</a>
+                    <a href="/auth/logout" class="button">Выйти</a>
+                </div>
+            {% endif %}
         </div>
     </header>
-    <nav class="navigation">
-        <div class="container">
-            <ul class="menu">
-                <li class="menu-list">
-                    <a class="menu-link" href="/auth">Авторизация</a>
-                </li>
-                <li class="menu-list">
-                    <a class="menu-link" href="/index">Все файлы</a>
-                </li>
-
-                {% if user.role=="isAdmin" %}
-                    <li class="menu-list">
-                        <a class="menu-link" href="/user">Users</a>
-                    </li>
-                    <li class="menu-list">
-                        <a class="menu-link" href="/order">Orders</a>
-                    </li>
-                {% endif %}
-
-            </ul>
-        </div>
-    </nav>
 
     {{ content|raw }}
 </div>

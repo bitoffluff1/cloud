@@ -11,12 +11,19 @@ class IndexController extends Controller
 
     public function indexAction()
     {
-        $sql = "SELECT * FROM `files` WHERE `id_user` = '{$this->checkUser()}' AND `id_folder` IS NULL";
+        $this->isUser();
+
+        $path = App::call()->fileServices->getPathFile($this->checkUser());
+
+        if (!empty($this->getId())) {
+            $folder = App::call()->folderRepository->getOne($this->getId());
+            $path = App::call()->folderServices->getPathFolder($folder->columns);
+        }
 
         $params = [
-            "user" => $this->checkUser(),
-            "files" => App::call()->fileRepository->getAll($this->checkUser(), $sql),
-            "folder" => App::call()->folderRepository->getAll($this->checkUser())
+            "files" => App::call()->fileRepository->getAll($path),
+            "folder" => App::call()->folderRepository->getAll($path),
+            "id_folder" => $folder->columns["id"]
         ];
 
         echo $this->render("index", $params);
@@ -24,26 +31,32 @@ class IndexController extends Controller
 
     public function addAction()
     {
-        $id_user = $this->checkUser();
-        $file = $this->request->getFile();
-        $arr = explode(".", $file["name"]);
+        $this->isUser();
 
-        $id_folder = $this->request->getParams("post", "id");
+        $path = App::call()->fileServices->getPathFile($this->checkUser());
+
+        $id_folder = $this->request->getParams("post", "id_folder");
         if (!empty($id_folder)) {
-            $params["id_folder"] = $id_folder;
             $folder = App::call()->folderRepository->getOne($id_folder);
-            $path = App::call()->fileServices->copyFile($id_user, $file, $folder->columns["name"]);
-        } else {
-            $path = App::call()->fileServices->copyFile($id_user, $file);
+            $path = App::call()->folderServices->getPathFolder($folder->columns);
         }
 
-        $params["id_user"] = $id_user;
-        $params["name"] = $arr[0];
-        $params["filename_extension"] = $arr[1];
+        $file = $this->request->getFile();
+
+        if (!App::call()->fileServices->checkFile($file)) {
+            $this->redirect();
+            return;
+        }
+
+        $arrFileName = explode(".", $file["name"]);
+        $params["id_user"] = $this->checkUser();
+        $params["filename_extension"] = $arrFileName[1];
         $params["path"] = $path;
 
-        if ($this->checkData($params)) {
-            App::call()->fileServices->changeFile($params);
+        $nameFile = App::call()->fileServices->copyFile($path, $file, $arrFileName[0], $arrFileName[1]);
+        if (!empty($nameFile) && $this->checkData($params)) {
+            $params["name"] = $nameFile;
+            //App::call()->fileServices->changeFile($params);
         }
 
         $this->redirect();
@@ -51,15 +64,17 @@ class IndexController extends Controller
 
     public function changeAction()
     {
+        $this->isUser();
+
         $params = $this->request->getParams("post");
         if (!isset($params["id"]) && !isset($params["name"])) {
             $this->redirect();
         }
+
         App::call()->fileServices->changeFile(["id" => $params["id"], "mark" => "changeName"]);
 
         $file = App::call()->fileRepository->getOne($params["id"]);
-        if (App::call()->fileServices->renameFile($file->columns["path"], $file->columns["name"],
-                $file->columns["filename_extension"], $params["name"]) &&
+        if (App::call()->fileServices->renameFile($file->columns, $params["name"]) &&
             $file->columns["mark"] === "changeName") {
             App::call()->fileServices->changeFile($params);
         }
@@ -71,11 +86,12 @@ class IndexController extends Controller
 
     public function deleteAction()
     {
+        $this->isUser();
+
         App::call()->fileServices->changeFile(["id" => $this->getId(), "mark" => "delete"]);
         $file = App::call()->fileRepository->getOne($this->getId());
 
-        if (App::call()->fileServices->deleteFile($file->columns["path"], $file->columns["name"],
-                $file->columns["filename_extension"]) &&
+        if (App::call()->fileServices->deleteFile($file->columns) &&
             $file->columns["mark"] === "delete") {
             $file = App::call()->fileRepository->newEntity(["id" => $this->getId()]);
             App::call()->fileRepository->delete($file);
@@ -86,6 +102,8 @@ class IndexController extends Controller
 
     public function downloadAction()
     {
+        $this->isUser();
+
         $item = App::call()->fileRepository->getOne($this->getId());
         $file = PUBLIC_DIR . $item->columns["path"] . "/{$item->columns['name']}.{$item->columns['filename_extension']}";
 

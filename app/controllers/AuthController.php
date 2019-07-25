@@ -12,7 +12,7 @@ class AuthController extends Controller
     public function authAction()
     {
         $params = [
-            "user" => $this->checkUser(),
+            "user" => $this->request->getSession("user"),
         ];
 
         echo $this->render("auth", $params);
@@ -33,16 +33,12 @@ class AuthController extends Controller
             return;
         }
 
-        if(App::call()->authServices->login($this->request, $user->columns, $password)){
-
-            $params = [
-                "user" => $user->columns,
-            ];
-            echo $this->render("auth", $params);
-
-        } else {
-            $this->redirect();
+        if (App::call()->authServices->login($this->request, $user->columns, $password)) {
+            $this->redirect("/index");
+            return;
         }
+
+        $this->redirect();
     }
 
     public function signUpAction()
@@ -57,38 +53,25 @@ class AuthController extends Controller
 
         if (App::call()->authServices->checkBusyLogin($login)) {
             $params = [
-                "user" => $this->checkUser(),
                 "message" => "Логин {$login} уже используется!",
             ];
             echo $this->render("auth", $params);
-
             return;
         }
 
         $data = ["login" => $login, "password" => $password, "fio" => $fio];
 
-        $user = $this->checkUser();
-        if($user["role"] === "isAdmin"){
-            $data["role"] = "isAdmin";
+        if (App::call()->authServices->addUser($this->request, $data)) {
+            $this->redirect("/index");
+            return;
         }
 
-        $newUser = App::call()->authServices->addUser($this->request, $data);
-
-        $params = [
-            "user" => $newUser,
-        ];
-        echo $this->render("auth", $params);
+        $this->redirect();
     }
 
     public function logoutAction()
     {
         App::call()->authServices->logout($this->request);
         $this->redirect("/auth");
-    }
-
-    public function getUserAction(){
-        if ($_SERVER["REQUEST_METHOD"] === "POST") {
-            echo $user = json_encode($this->checkUser());
-        }
     }
 }
