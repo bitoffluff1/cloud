@@ -44,7 +44,7 @@ class FolderController extends Controller
         App::call()->folderServices->changeFile(["id" => $params["id"], "mark" => "changeName"]);
 
         $folder = App::call()->folderRepository->getOne($params["id"]);
-        foreach (["file", "folder"] as $entity){
+        foreach (["file", "folder"] as $entity) {
             App::call()->folderServices->renamePath($folder, $params["name"], $entity);
         }
 
@@ -62,13 +62,16 @@ class FolderController extends Controller
     {
         $this->isUser();
 
-        App::call()->folderServices->changeFile(["id" => $this->getId(), "mark" => "delete"]);
-        $file = App::call()->folderRepository->getOne($this->getId());
+        $folder = App::call()->folderRepository->getOne($this->getId());
+        App::call()->folderServices->changeFile(["id" => $folder->columns["id"], "mark" => "delete"]);
 
-        if (App::call()->folderServices->deleteFile($this->checkUser(), $file->columns["name"]) &&
-            $file->columns["mark"] === "delete") {
+        if (App::call()->folderServices->deleteFile($folder->columns["path"], $folder->columns["name"])) {
             $file = App::call()->folderRepository->newEntity(["id" => $this->getId()]);
             App::call()->folderRepository->delete($file);
+        }
+
+        foreach (["file", "folder"] as $entity) {
+            App::call()->folderServices->deleteFileDb($folder, $entity);
         }
 
         $this->redirect();

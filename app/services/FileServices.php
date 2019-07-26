@@ -53,12 +53,13 @@ class FileServices
             $length = count($arr);
             $name = "{$fileName}({$length}).{$fileFormat}";
             move_uploaded_file($file['tmp_name'], PUBLIC_DIR . $path . "/{$name}");
+            $name = "{$fileName}({$length})";
         } else {
-            $name = $file['name'];
+            $name = $fileName;
             move_uploaded_file($file['tmp_name'], $newFile);
         }
 
-        if (file_exists(PUBLIC_DIR . $path . "/{$name}")) {
+        if (file_exists(PUBLIC_DIR . $path . "/{$name}.{$fileFormat}")) {
             return $name;
         }
         return false;

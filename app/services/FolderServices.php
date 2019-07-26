@@ -14,6 +14,10 @@ class FolderServices
 
     public function addFolder($path)
     {
+        if (!file_exists(PUBLIC_DIR . $path)) {
+            mkdir(PUBLIC_DIR . $path);
+        }
+
         if (file_exists(PUBLIC_DIR . $path . "/Новая папка")) {
             $files = scandir(PUBLIC_DIR . $path);
             $arr = [];
@@ -71,65 +75,50 @@ class FolderServices
         return false;
     }
 
-    public function renamePath($folder, $newName, $entity)
-    {
-        $path = "{$folder->columns["path"]}/{$folder->columns["name"]}";
-        $newPath = "{$folder->columns["path"]}/{$newName}";
-        $items = [];
 
+    public function getLikeItems($path, $entity)
+    {
         if ($entity === "file") {
             $items = App::call()->fileRepository->getAllLike("{$path}%");
         } else if ($entity === "folder") {
             $items = App::call()->folderRepository->getAllLike("{$path}%");
         }
 
+        $array = [];
         foreach ($items as $item) {
             foreach ($item as $value) {
-                $data["id"] = $value["id"];
-                $data["path"] = $this->getNewPath($path, $newPath);
-
-                if ($entity === "file") {
-                    App::call()->fileServices->changeFile($data);
-                } else if ($entity === "folder") {
-                    App::call()->folderServices->changeFile($data);
-                }
+                $array[] = $value;
             }
         }
+        return $array;
     }
 
-    public function getNewPath($string_1, $string_2)
+    public function renamePath($folder, $newName, $entity)
     {
-        $string_1_length = strlen($string_1);
-        $string_2_length = strlen($string_2);
-        $return = '';
+        $path = "{$folder->columns["path"]}/{$folder->columns["name"]}";
+        $newPath = "{$folder->columns["path"]}/{$newName}";
 
-        $longest_common_subsequence = array_fill(0, $string_1_length,
-            array_fill(0, $string_2_length, 0));
+        $items = $this->getLikeItems($path, $entity);
 
-        $largest_size = 0;
+        foreach ($items as $value) {
+            $data["id"] = $value["id"];
 
-        for ($i = 0; $i < $string_1_length; $i++) {
-            for ($j = 0; $j < $string_2_length; $j++) {
-                if ($string_1[$i] === $string_2[$j]) {
-                    if ($i === 0 || $j === 0) {
-                        $longest_common_subsequence[$i][$j] = 1;
-                    } else {
-                        $longest_common_subsequence[$i][$j] = $longest_common_subsequence[$i - 1][$j - 1] + 1;
-                    }
+            if ($value["path"] === $path) {
+                $data["path"] = $newPath;
+            } else {
+                $arrayPath = explode("/", $value["path"]);
+                $arrNewPath = explode("/", $newPath);
 
-                    if ($longest_common_subsequence[$i][$j] > $largest_size) {
-                        $largest_size = $longest_common_subsequence[$i][$j];
-                        $return = '';
-                    }
-
-                    if ($longest_common_subsequence[$i][$j] === $largest_size) {
-                        $return = substr($string_1, $i - $largest_size + 1, $largest_size);
-                    }
-                }
+                $data["path"] = implode("/", array_replace($arrayPath, $arrNewPath));
             }
-        }
 
-        return $return;
+            if ($entity === "file") {
+                App::call()->fileServices->changeFile($data);
+            } else if ($entity === "folder") {
+                App::call()->folderServices->changeFile($data);
+            }
+
+        }
     }
 
     public function removeDirectory($dir)
@@ -142,16 +131,33 @@ class FolderServices
         rmdir($dir);
     }
 
-    public function deleteFile($id_user, $name)
+
+    public function deleteFile($path, $name)
     {
-        $file = PUBLIC_DIR . "/../files/{$id_user}/{$name}";
+        $file = PUBLIC_DIR . $path . "/{$name}";
 
         $this->removeDirectory($file);
 
         if (!file_exists($file)) {
             return true;
-        } else {
-            return false;
+        }
+        return false;
+    }
+
+    public function deleteFileDb($folder, $entity)
+    {
+        $path = "{$folder->columns["path"]}/{$folder->columns["name"]}";
+
+        $items = $this->getLikeItems($path, $entity);
+
+        foreach ($items as $value) {
+            if ($entity === "file") {
+                $file = App::call()->fileRepository->newEntity(["id" => $value["id"]]);
+                App::call()->fileRepository->delete($file);
+            } else if ($entity === "folder") {
+                $file = App::call()->folderRepository->newEntity(["id" => $value["id"]]);
+                App::call()->folderRepository->delete($file);
+            }
         }
     }
 }

@@ -56,7 +56,7 @@ class IndexController extends Controller
         $nameFile = App::call()->fileServices->copyFile($path, $file, $arrFileName[0], $arrFileName[1]);
         if (!empty($nameFile) && $this->checkData($params)) {
             $params["name"] = $nameFile;
-            //App::call()->fileServices->changeFile($params);
+            App::call()->fileServices->changeFile($params);
         }
 
         $this->redirect();
